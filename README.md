@@ -71,3 +71,36 @@ export default defineConfig([
   },
 ])
 ```
+
+``` 
+Entry Point
+- main.tsx — App bootstrap. Imports index.css, creates React root, renders <App /> in StrictMode.
+- App.tsx — Root component. Sets up routing (/ → UserListPage, /users/:id → UserDetailPage), lazy-loads pages, wraps in BrowserRouter and Suspense, renders Header/Footer/main.
+Pages
+- pages/UserListPage.tsx — Dashboard view. Fetches all users, handles search (debounced), filter by city/company, sort by name/username/email, pagination, view toggle (card/table), CSV export, and favorites.
+- pages/UserDetailPage.tsx — Single-user detail view. Fetches user by id from URL params, displays avatar, badges, and sections for basic info, address, and company.
+API
+- api/users.ts — Axios client pointing at jsonplaceholder.typicode.com. Exports fetchUsers() and fetchUserById(id).
+Hooks
+- hooks/useUsers.ts — Fetches user list, manages loading/error/data state, exposes retry.
+- hooks/useFavorites.ts — Persists favorite user IDs to localStorage, provides toggleFavorite/isFavorite.
+- hooks/useTheme.ts — Reads/writes theme (light/dark) to localStorage, respects prefers-color-scheme.
+- hooks/useDebounce.ts — Generic debounce hook (default 400ms) for the search input.
+Components
+- components/Header.tsx — Sticky header with logo, "jsonplaceholder API" badge, and dark/light theme toggle button.
+- components/Footer.tsx — Simple footer with credit text.
+- components/SearchBar.tsx — Search input with magnifying glass icon and clear button.
+- components/FilterSection.tsx — Two <select> dropdowns to filter by city and company.
+- components/SortControls.tsx — Three toggle buttons (Name/Username/Email) that cycle asc/desc.
+- components/Pagination.tsx — Page number navigation with ellipsis for large page counts.
+- components/UserCard.tsx — Card view of a user (avatar, name, email, phone, website, city, favorite star). Clicking navigates to detail page.
+- components/UserTable.tsx — Table view of users with columns for all fields. Clicking a row navigates to detail page.
+- components/SkeletonLoader.tsx — Shimmer placeholder cards shown while users are loading.
+- components/EmptyState.tsx — "No users found" message with clear-filters button.
+- components/ErrorState.tsx — "Something went wrong" message with retry button.
+Types & Utils
+- types/index.ts — TypeScript interfaces: User, Address, Geo, Company, plus config types SortConfig, FilterConfig, PaginationConfig.
+- utils/userUtils.ts — Pure functions: searchUsers, sortUsers, filterUsers, paginateUsers, exportToCSV, getUniqueCities, getUniqueCompanies.
+Styles
+- index.css — All app styles: design tokens (light/dark), reset, header, controls, search, filters, sort, buttons, view toggle, results info, user grid, cards, table, pagination, skeleton, empty/error states, footer, detail page, spinner, animations.
+- App.css — Unused Vite boilerplate (not imported anywhere).
