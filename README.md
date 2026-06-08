@@ -80,6 +80,20 @@ src/
 
 ## Testing Instructions
 
+## Screenshots
+
+Home page (dark mode) — user card grid with search, filters, sort, and favorites toggle.
+![Home Dark](screen_shots/home_dark.png)
+
+Home page (light mode).
+![Home Light](screen_shots/home_light.png)
+
+User detail page (dark mode) — avatar, info, address, and company sections.
+![Details Dark](screen_shots/details_dark.png)
+
+User detail page (light mode).
+![Details Light](screen_shots/details_light.png)
+
 This project does not include automated tests. The test directory and Jest dependencies were removed early in development per project constraints.
 
 To manually verify the app:
