@@ -13,14 +13,14 @@ const SkeletonLoader: FC<SkeletonLoaderProps> = ({ count = 6 }) => {
           <div className="skeleton-card__header">
             <div className="skeleton skeleton--avatar" />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div className="skeleton skeleton--text-md" />
-              <div className="skeleton skeleton--text-sm" />
+              <div className="skeleton skeleton--text-lg" />
+              <div className="skeleton skeleton--text" />
             </div>
           </div>
-          <div className="skeleton-card__lines">
-            <div className="skeleton skeleton--text-md" />
-            <div className="skeleton skeleton--text-sm" />
-            <div className="skeleton skeleton--text-md" style={{ width: '50%' }} />
+          <div className="skeleton-card__body">
+            <div className="skeleton skeleton--text-lg" />
+            <div className="skeleton skeleton--text" />
+            <div className="skeleton skeleton--text" style={{ width: '50%' }} />
           </div>
         </div>
       ))}

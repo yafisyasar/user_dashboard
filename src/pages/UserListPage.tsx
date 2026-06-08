@@ -7,7 +7,6 @@ import SearchBar from '../components/SearchBar'
 import SkeletonLoader from '../components/SkeletonLoader'
 import SortControls from '../components/SortControls'
 import UserCard from '../components/UserCard'
-import UserTable from '../components/UserTable'
 import { useDebounce } from '../hooks/useDebounce'
 import { useFavorites } from '../hooks/useFavorites'
 import { useUsers } from '../hooks/useUsers'
@@ -22,19 +21,17 @@ import {
   sortUsers,
 } from '../utils/userUtils'
 
-type ViewMode = 'card' | 'table'
-
 const ITEMS_PER_PAGE = 5
 
 const UserListPage = () => {
   const { users, loading, error, retry } = useUsers()
-  const { isFavorite, toggleFavorite } = useFavorites()
+  const { favorites, isFavorite, toggleFavorite } = useFavorites()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [sort, setSort] = useState<SortConfig>({ field: 'name', direction: 'asc' })
   const [filters, setFilters] = useState<FilterConfig>({ city: '', company: '' })
   const [currentPage, setCurrentPage] = useState(1)
-  const [viewMode, setViewMode] = useState<ViewMode>('card')
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
 
   const debouncedQuery = useDebounce(searchQuery, 400)
 
@@ -48,9 +45,14 @@ const UserListPage = () => {
     return result
   }, [users, debouncedQuery, filters, sort])
 
+  const displayedUsers = useMemo(() => {
+    if (showFavoritesOnly) return processedUsers.filter((u) => isFavorite(u.id))
+    return processedUsers
+  }, [processedUsers, showFavoritesOnly, isFavorite])
+
   const { paginatedUsers, totalPages } = useMemo(
-    () => paginateUsers(processedUsers, currentPage, ITEMS_PER_PAGE),
-    [processedUsers, currentPage]
+    () => paginateUsers(displayedUsers, currentPage, ITEMS_PER_PAGE),
+    [displayedUsers, currentPage]
   )
 
   const handleSearchChange = useCallback(
@@ -74,14 +76,15 @@ const UserListPage = () => {
   const handleClearAll = useCallback(() => {
     setSearchQuery('')
     setFilters({ city: '', company: '' })
+    setShowFavoritesOnly(false)
     setCurrentPage(1)
   }, [])
 
   const handleExport = useCallback(() => {
-    exportToCSV(processedUsers)
-  }, [processedUsers])
+    exportToCSV(displayedUsers)
+  }, [displayedUsers])
 
-  const hasActiveFilters = debouncedQuery || filters.city || filters.company
+  const hasActiveFilters = debouncedQuery || filters.city || filters.company || showFavoritesOnly
 
   if (error) {
     return <ErrorState message={error} onRetry={retry} />
@@ -95,28 +98,22 @@ const UserListPage = () => {
             <SearchBar value={searchQuery} onChange={handleSearchChange} />
           </div>
           <div className="controls__actions">
-            <div className="view-toggle" role="group" aria-label="View mode">
-              <button
-                className={`view-toggle__btn ${viewMode === 'card' ? 'active' : ''}`}
-                onClick={() => setViewMode('card')}
-                aria-label="Card view"
-                aria-pressed={viewMode === 'card'}
-              >
-                ▦
-              </button>
-              <button
-                className={`view-toggle__btn ${viewMode === 'table' ? 'active' : ''}`}
-                onClick={() => setViewMode('table')}
-                aria-label="Table view"
-                aria-pressed={viewMode === 'table'}
-              >
-                ☰
-              </button>
-            </div>
+            <button
+              className={`fav-filter ${showFavoritesOnly ? 'active' : ''}`}
+              onClick={() => { setShowFavoritesOnly((v) => !v); setCurrentPage(1) }}
+              aria-label={showFavoritesOnly ? 'Show all users' : 'Show favorites only'}
+              aria-pressed={showFavoritesOnly}
+            >
+              <span className={`fav-filter__star ${showFavoritesOnly ? 'active' : ''}`}>
+                {showFavoritesOnly ? '★' : '☆'}
+              </span>
+              Favorites
+              {favorites.length > 0 && <span className="fav-filter__count">{favorites.length}</span>}
+            </button>
             <button
               className="btn btn-secondary"
               onClick={handleExport}
-              disabled={processedUsers.length === 0}
+              disabled={displayedUsers.length === 0}
               aria-label="Export users as CSV"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -142,8 +139,8 @@ const UserListPage = () => {
       {!loading && (
         <div className="results-info" aria-live="polite">
           <p className="results-info__text">
-            Showing <strong>{processedUsers.length}</strong>{' '}
-            {processedUsers.length === 1 ? 'user' : 'users'}
+            Showing <strong>{displayedUsers.length}</strong>{' '}
+            {displayedUsers.length === 1 ? 'user' : 'users'}
             {hasActiveFilters && ' (filtered)'}
           </p>
           {hasActiveFilters && (
@@ -161,10 +158,10 @@ const UserListPage = () => {
       )}
 
       {loading ? (
-        <SkeletonLoader count={6} />
-      ) : processedUsers.length === 0 ? (
-        <EmptyState query={debouncedQuery} onClear={handleClearAll} />
-      ) : viewMode === 'card' ? (
+        <SkeletonLoader count={5} />
+      ) : displayedUsers.length === 0 ? (
+        <EmptyState query={debouncedQuery} onClear={handleClearAll} isFavoritesOnly={showFavoritesOnly} />
+      ) : (
         <div className="user-grid">
           {paginatedUsers.map((user) => (
             <UserCard
@@ -175,15 +172,9 @@ const UserListPage = () => {
             />
           ))}
         </div>
-      ) : (
-        <UserTable
-          users={paginatedUsers}
-          isFavorite={isFavorite}
-          onToggleFavorite={toggleFavorite}
-        />
       )}
 
-      {!loading && processedUsers.length > 0 && (
+      {!loading && displayedUsers.length > 0 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
