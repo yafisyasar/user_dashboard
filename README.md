@@ -102,6 +102,98 @@ usr_db/
 
 **Theming:** `useTheme` reads the initial preference from localStorage (fallback to system `prefers-color-scheme`). Toggling updates a `data-theme` attribute on `<html>`, and CSS custom properties switch accordingly.
 
+## File-by-File Breakdown
+
+### Entry Points
+
+**`main.tsx`** — The React entry point. Mounts `<App />` inside `<React.StrictMode>` to `#root`. Imports `index.css` for all styling.
+
+**`App.tsx`** — Root component. Wraps everything in `<BrowserRouter>` (React Router). Calls `useTheme()` to get theme state, passes it to `<Header>`. Layout: `<Header>` → `<main>` with `<AppRoutes />` → `<Footer>`.
+
+**`index.css`** — All styling lives here. Uses BEM-class-based CSS with `:root` + `[data-theme='light']` defining all theme variables (glass colors, text colors, accent violet, star amber, radii, transitions, gradient backgrounds). BEM blocks for every component. `@keyframes shimmer` + `@keyframes spin` for loading animations. `@media` breakpoints at 1024px, 768px, 640px, 480px for responsive layout. Imports Tailwind but only uses `.sr-only` from it.
+
+### Routing
+
+**`routes/index.tsx`** — Lazy-loads both pages (`UserListPage`, `UserDetailPage`) and wraps them in `<Suspense>` with a spinner fallback. Two routes: `/` (user list) and `/users/:id` (user detail).
+
+### Types
+
+**`types/index.ts`** — Pure TypeScript interfaces mirroring the JSONPlaceholder API shape: `Geo`, `Address`, `Company`, `User`, `SortField`, `SortDirection`, `SortConfig`, `FilterConfig`.
+
+### Services (API Layer)
+
+**`services/users.ts`** — Axios client with a 10-second timeout pointed at `https://jsonplaceholder.typicode.com`. Exposes: `fetchUsers()` (`GET /users`) and `fetchUserById(id)` (`GET /users/{id}`).
+
+### Hooks
+
+**`hooks/useUsers.ts`** — Fetches all users on mount. Returns `{ users, loading, error, retry }`. `retry()` resets and re-fetches on error.
+
+**`hooks/useFavorites.ts`** — Persists favorite user IDs in `localStorage`. `toggleFavorite(id)` adds/removes using functional updater. `isFavorite(id)` checks membership.
+
+**`hooks/useTheme.ts`** — Manages dark/light theme. Initializes from `localStorage`, falls back to `prefers-color-scheme`. Sets `data-theme` attribute on `<html>`.
+
+**`hooks/useDebounce.ts`** — Generic debounce hook (default 400ms). Used to delay search filtering until the user stops typing.
+
+### Pages
+
+**`pages/UserListPage.tsx`** — Main orchestrator page. Renders 5 UI states: error (`<ErrorState>`), loading (`<SkeletonLoader>`), empty (`<EmptyState>` with context-aware messaging), normal (filtered card grid + pagination).
+
+Data pipeline (all memoized): `raw users → debounce → searchUsers() → filterUsers() → sortUsers() → [optional favorites filter] → paginateUsers()`. Top bar: search + favorites toggle + CSV export. Bottom bar: city/company filters + sort buttons.
+
+**`pages/UserDetailPage.tsx`** — Reads `:id` from URL, fetches single user via `fetchUserById()`. Uses cancelled-flag pattern to prevent state updates on unmounted component. Shows: back link → hero section (avatar + name + email/phone/website) → 2-column grid with Address card and Company card.
+
+### Components
+
+**`Header.tsx`** — Sticky header with B/W person SVG icon + "User Database" title on the left, B/W theme toggle button (sun/moon SVGs) on the right. Uses `.header`, `.theme-toggle` BEM classes.
+
+**`Footer.tsx`** — Centered footer with "Built using React + TypeScript" text.
+
+**`UserCard.tsx`** — `memo`ized card for each user. Gray gradient avatar with initials, name + @username, star toggle (★/☆), email/phone/website with SVG icons. Click navigates to `/users/{id}`. Star button uses `stopPropagation`.
+
+**`SearchBar.tsx`** — Search input with magnifier icon on the left, clear × button on the right (visible only when value is non-empty). Focus accent glow via `:focus-within`.
+
+**`FilterSection.tsx`** — Two `<select>` dropdowns (City, Company) populated from unique values. Default to "All".
+
+**`SortControls.tsx`** — Button group: Name | Username | Email. Click active button toggles asc/desc (↑↓). Inactive buttons set that field ascending.
+
+**`Pagination.tsx`** — `memo`ized. Ellipsis logic for >7 pages. ←/→ disabled at boundaries. Active page has accent background. Returns `null` when `totalPages <= 1`.
+
+**`SkeletonLoader.tsx`** — Animated shimmer skeleton cards matching the card grid layout. Avatar circle + text lines with CSS-only `@keyframes shimmer`.
+
+**`EmptyState.tsx`** — Context-aware empty messaging: "No favorites yet" vs "No users found". "Clear filters" button.
+
+**`ErrorState.tsx`** — Error message + "Try Again" button. Uses `role="alert"`.
+
+### Utilities
+
+**`utils/userUtils.ts`** — Pure functions: `searchUsers` (filters by name/username/email), `sortUsers` (copies + sorts), `filterUsers` (matches city AND company), `paginateUsers` (slice for current page), `exportToCSV` (triggers browser download), `getUniqueCities` / `getUniqueCompanies` (for filter dropdowns).
+
+### Data Flow Summary
+
+```
+Browser URL
+  ↓
+main.tsx → App.tsx
+  │          ├── useTheme() → { theme, toggleTheme }
+  │          ├── <Header theme toggleTheme />
+  │          └── <AppRoutes />   ← React Router
+  │                ├── / → UserListPage
+  │                │      ├── useUsers() → fetchUsers() [Axios → jsonplaceholder]
+  │                │      ├── useFavorites() → localStorage
+  │                │      ├── useDebounce(searchQuery)
+  │                │      ├── userUtils: search → filter → sort → paginate
+  │                │      ├── SearchBar → FilterSection → SortControls
+  │                │      ├── UserCard → UserDetailPage (click)
+  │                │      └── Pagination
+  │                └── /users/:id → UserDetailPage
+  │                       ├── useParams() → fetchUserById(id)
+  │                       ├── Loading/Error/User states
+  │                       └── Back link → /
+  └── <Footer />
+
+index.css: BEM classes + CSS vars + Tailwind (sr-only only)
+```
+
 ## Screenshots
 
 Home page (dark mode) — user card grid with search, filters, sort, and favorites toggle.
