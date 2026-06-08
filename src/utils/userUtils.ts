@@ -7,7 +7,7 @@ export const searchUsers = (users: User[], query: string): User[] => {
     (u) =>
       u.name.toLowerCase().includes(q) ||
       u.username.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q)
+      u.email.toLowerCase().includes(q),
   )
 }
 
@@ -32,7 +32,7 @@ export const filterUsers = (users: User[], filters: FilterConfig): User[] => {
 export const paginateUsers = (
   users: User[],
   currentPage: number,
-  itemsPerPage: number
+  itemsPerPage: number,
 ): { paginatedUsers: User[]; totalPages: number } => {
   const totalPages = Math.ceil(users.length / itemsPerPage)
   const start = (currentPage - 1) * itemsPerPage

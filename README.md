@@ -1,6 +1,6 @@
 # User Dashboard
 
-A dark-themed user management dashboard built with React, TypeScript, and Vite. Fetches user data from [JSONPlaceholder](https://jsonplaceholder.typicode.com) and provides search, filter, sort, pagination, and favorites functionality.
+A dark-themed user management dashboard built with React, TypeScript, Vite, and Tailwind CSS. Fetches user data from [JSONPlaceholder](https://jsonplaceholder.typicode.com) and provides search, filter, sort, pagination, and favorites functionality.
 
 **Live Demo:** [https://usr-dboard.vercel.app/](https://usr-dboard.vercel.app/)
 
@@ -38,47 +38,69 @@ npm run build
 
 The app runs on `http://localhost:5173` by default.
 
+## Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start development server |
+| `npm run build` | Type-check and build for production |
+| `npm run lint` | Run ESLint across the codebase |
+| `npm run format` | Format all source files with Prettier |
+| `npm run preview` | Preview the production build locally |
+
 ## Architecture Explanation
 
 ```
-src/
-├── api/            # Axios client for JSONPlaceholder
-│   └── users.ts
-├── components/     # Reusable UI components
-│   ├── EmptyState.tsx
-│   ├── ErrorState.tsx
-│   ├── FilterSection.tsx
-│   ├── Footer.tsx
-│   ├── Header.tsx
-│   ├── Pagination.tsx
-│   ├── SearchBar.tsx
-│   ├── SkeletonLoader.tsx
-│   ├── SortControls.tsx
-│   └── UserCard.tsx
-├── hooks/          # Custom React hooks
-│   ├── useDebounce.ts
-│   ├── useFavorites.ts
-│   ├── useTheme.ts
-│   └── useUsers.ts
-├── pages/          # Route-level page components
-│   ├── UserDetailPage.tsx
-│   └── UserListPage.tsx
-├── types/          # TypeScript type definitions
-│   └── index.ts
-├── utils/          # Pure utility functions
-│   └── userUtils.ts
-├── App.tsx         # Root component with routing
-├── main.tsx        # Entry point
-└── index.css       # All styles (global, theme tokens, components)
+usr_db/
+├── public/            # Public static assets (favicon)
+├── screen_shots/      # Screenshots for README
+├── src/
+│   ├── assets/        # Static assets
+│   ├── components/    # Reusable UI components
+│   │   ├── EmptyState.tsx
+│   │   ├── ErrorState.tsx
+│   │   ├── FilterSection.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Header.tsx
+│   │   ├── Pagination.tsx
+│   │   ├── SearchBar.tsx
+│   │   ├── SkeletonLoader.tsx
+│   │   ├── SortControls.tsx
+│   │   └── UserCard.tsx
+│   ├── hooks/         # Custom React hooks
+│   │   ├── useDebounce.ts
+│   │   ├── useFavorites.ts
+│   │   ├── useTheme.ts
+│   │   └── useUsers.ts
+│   ├── pages/         # Route-level page components
+│   │   ├── UserDetailPage.tsx
+│   │   └── UserListPage.tsx
+│   ├── routes/        # Route configuration (lazy-loaded)
+│   │   └── index.tsx
+│   ├── services/      # API client (Axios -> JSONPlaceholder)
+│   │   └── users.ts
+│   ├── types/         # TypeScript type definitions
+│   │   └── index.ts
+│   ├── utils/         # Pure utility functions
+│   │   └── userUtils.ts
+│   ├── App.tsx        # Root component
+│   ├── main.tsx       # Entry point
+│   └── index.css      # All styles (global, theme tokens, components)
+├── .prettierrc        # Prettier configuration
+├── eslint.config.js   # ESLint configuration
+├── index.html         # HTML entry point
+├── package.json
+├── tsconfig.json
+├── tsconfig.app.json
+├── tsconfig.node.json
+└── vite.config.ts
 ```
 
 **Data flow:** `UserListPage` uses `useUsers` to fetch all users on mount. The raw list is passed through `searchUsers` → `filterUsers` → `sortUsers` → `paginateUsers` (pure functions in `userUtils.ts`). Search is debounced (400ms) via `useDebounce`. Favorites are managed independently through `useFavorites` (localStorage-backed) and applied as a post-filter when the favorites toggle is active.
 
-**Routing:** React Router v6 — `/` renders `UserListPage`, `/users/:id` renders `UserDetailPage`. Pages are lazy-loaded with `React.lazy` and wrapped in `<Suspense>`.
+**Routing:** React Router — `/` renders `UserListPage`, `/users/:id` renders `UserDetailPage`. Routes are defined in `src/routes/index.tsx`. Pages are lazy-loaded with `React.lazy` and wrapped in `<Suspense>`.
 
 **Theming:** `useTheme` reads the initial preference from localStorage (fallback to system `prefers-color-scheme`). Toggling updates a `data-theme` attribute on `<html>`, and CSS custom properties switch accordingly.
-
-## Testing Instructions
 
 ## Screenshots
 
@@ -94,7 +116,9 @@ User detail page (dark mode) — avatar, info, address, and company sections.
 User detail page (light mode).
 ![Details Light](screen_shots/details_light.png)
 
-This project does not include automated tests. The test directory and Jest dependencies were removed early in development per project constraints.
+## Testing Instructions
+
+This project does not include automated tests. The test directory and Jest dependencies were removed per project constraints.
 
 To manually verify the app:
 
@@ -116,7 +140,7 @@ To manually verify the app:
 - **All filtering, sorting, and pagination done client-side** on a single API call (only 10 users, so no server round-trips)
 - **React.lazy + Suspense** for code-splitting the detail page bundle
 - **CSS custom properties** for theming (no re-renders on theme switch — single DOM attribute change)
-- **Infinite scroll not needed** — small dataset kept in memory; client-side pagination renders 5 items per page
+- **Tailwind CSS utility classes** alongside custom CSS for efficient styling
 - **localStorage writes** only happen on explicit favorite/theme toggle (not on every render)
 - **Pure functions** in `userUtils.ts` are side-effect-free and trivially testable/reusable
 
@@ -127,4 +151,3 @@ To manually verify the app:
 - **No authentication or authorization** — the app is fully public and client-side only.
 - **localStorage is available** — favorites and theme preferences depend on it. If unavailable (private browsing restrictions), features degrade silently with defaults (empty favorites, dark theme).
 - **No backend** — all data comes from JSONPlaceholder. No mutations (create/update/delete) are supported.
-- **Mobile-first responsive is not required** — the layout targets desktop screens primarily. No media queries beyond basic card grid wrapping.

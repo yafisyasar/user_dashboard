@@ -1,4 +1,4 @@
-import React from 'react'
+import type { FC } from 'react'
 import type { SortConfig, SortField } from '../types'
 
 interface SortControlsProps {
@@ -12,7 +12,7 @@ const SORT_FIELDS: { field: SortField; label: string }[] = [
   { field: 'email', label: 'Email' },
 ]
 
-const SortControls: React.FC<SortControlsProps> = ({ sort, onSortChange }) => {
+const SortControls: FC<SortControlsProps> = ({ sort, onSortChange }) => {
   const handleClick = (field: SortField) => {
     if (sort.field === field) {
       onSortChange({ field, direction: sort.direction === 'asc' ? 'desc' : 'asc' })
@@ -36,9 +36,7 @@ const SortControls: React.FC<SortControlsProps> = ({ sort, onSortChange }) => {
               aria-label={`Sort by ${label} ${isActive ? (sort.direction === 'asc' ? 'descending' : 'ascending') : 'ascending'}`}
             >
               {label}
-              {isActive && (
-                <span aria-hidden="true">{sort.direction === 'asc' ? '↑' : '↓'}</span>
-              )}
+              {isActive && <span aria-hidden="true">{sort.direction === 'asc' ? '↑' : '↓'}</span>}
             </button>
           )
         })}

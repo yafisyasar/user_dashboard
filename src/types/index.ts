@@ -40,8 +40,3 @@ export interface FilterConfig {
   city: string
   company: string
 }
-
-export interface PaginationConfig {
-  currentPage: number
-  itemsPerPage: number
-}

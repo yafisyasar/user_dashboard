@@ -52,16 +52,13 @@ const UserListPage = () => {
 
   const { paginatedUsers, totalPages } = useMemo(
     () => paginateUsers(displayedUsers, currentPage, ITEMS_PER_PAGE),
-    [displayedUsers, currentPage]
+    [displayedUsers, currentPage],
   )
 
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearchQuery(value)
-      setCurrentPage(1)
-    },
-    []
-  )
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value)
+    setCurrentPage(1)
+  }, [])
 
   const handleFilterChange = useCallback((newFilters: FilterConfig) => {
     setFilters(newFilters)
@@ -100,7 +97,10 @@ const UserListPage = () => {
           <div className="controls__actions">
             <button
               className={`fav-filter ${showFavoritesOnly ? 'active' : ''}`}
-              onClick={() => { setShowFavoritesOnly((v) => !v); setCurrentPage(1) }}
+              onClick={() => {
+                setShowFavoritesOnly((v) => !v)
+                setCurrentPage(1)
+              }}
               aria-label={showFavoritesOnly ? 'Show all users' : 'Show favorites only'}
               aria-pressed={showFavoritesOnly}
             >
@@ -108,7 +108,9 @@ const UserListPage = () => {
                 {showFavoritesOnly ? '★' : '☆'}
               </span>
               Favorites
-              {favorites.length > 0 && <span className="fav-filter__count">{favorites.length}</span>}
+              {favorites.length > 0 && (
+                <span className="fav-filter__count">{favorites.length}</span>
+              )}
             </button>
             <button
               className="btn btn-secondary"
@@ -116,7 +118,17 @@ const UserListPage = () => {
               disabled={displayedUsers.length === 0}
               aria-label="Export users as CSV"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
@@ -145,11 +157,7 @@ const UserListPage = () => {
           </p>
           {hasActiveFilters && (
             <div className="results-info__controls">
-              <button
-                className="btn btn-secondary"
-                onClick={handleClearAll}
-                style={{ height: 30, fontSize: '0.78rem', padding: '0 10px' }}
-              >
+              <button className="btn btn-secondary btn-clear" onClick={handleClearAll}>
                 Clear filters
               </button>
             </div>
@@ -160,7 +168,11 @@ const UserListPage = () => {
       {loading ? (
         <SkeletonLoader count={5} />
       ) : displayedUsers.length === 0 ? (
-        <EmptyState query={debouncedQuery} onClear={handleClearAll} isFavoritesOnly={showFavoritesOnly} />
+        <EmptyState
+          query={debouncedQuery}
+          onClear={handleClearAll}
+          isFavoritesOnly={showFavoritesOnly}
+        />
       ) : (
         <div className="user-grid">
           {paginatedUsers.map((user) => (

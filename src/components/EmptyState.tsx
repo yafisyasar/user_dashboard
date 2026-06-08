@@ -1,4 +1,4 @@
-import React from 'react'
+import type { FC } from 'react'
 
 interface EmptyStateProps {
   query: string
@@ -6,7 +6,7 @@ interface EmptyStateProps {
   isFavoritesOnly?: boolean
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({ query, onClear, isFavoritesOnly }) => (
+const EmptyState: FC<EmptyStateProps> = ({ query, onClear, isFavoritesOnly }) => (
   <div className="empty-state" role="status" aria-live="polite">
     <div className="empty-state__icon" aria-hidden="true">
       {isFavoritesOnly ? '⭐' : '🔍'}

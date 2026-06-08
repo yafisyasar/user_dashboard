@@ -1,4 +1,4 @@
-import React from 'react'
+import type { FC } from 'react'
 import type { FilterConfig } from '../types'
 
 interface FilterSectionProps {
@@ -8,12 +8,7 @@ interface FilterSectionProps {
   onFilterChange: (filters: FilterConfig) => void
 }
 
-const FilterSection: React.FC<FilterSectionProps> = ({
-  filters,
-  cities,
-  companies,
-  onFilterChange,
-}) => {
+const FilterSection: FC<FilterSectionProps> = ({ filters, cities, companies, onFilterChange }) => {
   const handleCityChange = (city: string) => onFilterChange({ ...filters, city })
   const handleCompanyChange = (company: string) => onFilterChange({ ...filters, company })
 

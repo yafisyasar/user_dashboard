@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import type { User } from '../types'
-import { fetchUsers } from '../api/users'
+import { fetchUsers } from '../services/users'
 
 interface UseUsersReturn {
   users: User[]
@@ -14,22 +14,21 @@ export const useUsers = (): UseUsersReturn => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await fetchUsers()
-      setUsers(data)
-    } catch {
-      setError('Failed to fetch users. Please check your connection and try again.')
-    } finally {
-      setLoading(false)
-    }
+  useEffect(() => {
+    fetchUsers()
+      .then(setUsers)
+      .catch(() => setError('Failed to fetch users. Please check your connection and try again.'))
+      .finally(() => setLoading(false))
   }, [])
 
-  useEffect(() => {
-    load()
-  }, [load])
+  const retry = () => {
+    setLoading(true)
+    setError(null)
+    fetchUsers()
+      .then(setUsers)
+      .catch(() => setError('Failed to fetch users. Please check your connection and try again.'))
+      .finally(() => setLoading(false))
+  }
 
-  return { users, loading, error, retry: load }
+  return { users, loading, error, retry }
 }

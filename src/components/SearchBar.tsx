@@ -1,11 +1,11 @@
-import React from 'react'
+import type { FC } from 'react'
 
 interface SearchBarProps {
   value: string
   onChange: (value: string) => void
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ value, onChange }) => {
+const SearchBar: FC<SearchBarProps> = ({ value, onChange }) => {
   return (
     <div className="search-input">
       <label htmlFor="user-search" className="search-input__label">

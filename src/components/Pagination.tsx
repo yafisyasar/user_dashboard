@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, type FC } from 'react'
 
 interface PaginationProps {
   currentPage: number
@@ -6,7 +6,7 @@ interface PaginationProps {
   onPageChange: (page: number) => void
 }
 
-const Pagination: React.FC<PaginationProps> = memo(({ currentPage, totalPages, onPageChange }) => {
+const Pagination: FC<PaginationProps> = memo(({ currentPage, totalPages, onPageChange }) => {
   if (totalPages <= 1) return null
 
   const pages: (number | '...')[] = []
@@ -53,7 +53,7 @@ const Pagination: React.FC<PaginationProps> = memo(({ currentPage, totalPages, o
           >
             {page}
           </button>
-        )
+        ),
       )}
 
       <button
